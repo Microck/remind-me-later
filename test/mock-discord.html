@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>remind me later isolated UI test fixture</title>
+<style>
+:root { --font-primary: system-ui; --text-normal:#e9e9ee; --text-muted:#b4b5c0; --background-primary:#25262c; --background-secondary:#1e1f24; --background-floating:#17181c; --input-background:#16171b; color-scheme:dark; }
+body { background:#303139; color:#e9e9ee; font:14px system-ui; margin:0; }
+nav { width:220px; background:#212228; min-height:100vh; padding:24px; box-sizing:border-box; }
+nav a { display:block; color:#ccc; text-decoration:none; padding:12px; margin-bottom:8px; }
+main { position:absolute; top:35px; left:260px; max-width:560px; }
+small { color:#a4a5af; } .test-card { border:1px solid #ffffff20; border-radius:8px; padding:16px; margin-top:20px; }
+</style>
+<nav><small>LOCAL TEST FIXTURE</small><a id="dm" href="/channels/@me/333333333333333333">Direct message</a><a id="server" href="/channels/555555555555555555/666666666666666666"># follow-ups</a></nav>
+<main><h1>remind me later</h1><p>isolated browser test. not a live Discord session.</p><div class="test-card">reminders are rendered by the actual installable plugin. Discord and BetterDiscord APIs are mocked.</div></main>
+<script>
+window.module = {exports: {}};
+window.fixture = {
+ account: "111111111111111111", store: new Map(), toasts: [], alerts: [], patches: new Map(), accountListeners: new Set(), routes: [], saves: [], errors: [], native: [],
+ switchAccount(id) { this.account = id; for (const fn of this.accountListeners) fn(); }
+};
+window.addEventListener("error", e => fixture.errors.push(String(e.error || e.message)));
+window.BdApi = {
+ Data: {
+  load: (plugin, key) => fixture.store.has(key) ? structuredClone(fixture.store.get(key)) : undefined,
+  save: (plugin, key, value) => { if (fixture.failSave) throw new Error("Disk full"); fixture.store.set(key, structuredClone(value)); fixture.saves.push(key); }
+ },
+ Webpack: {
+  getStore(name) {
+   if (name === "UserStore") return {getCurrentUser: () => fixture.account ? {id: fixture.account} : null, addChangeListener: fn => fixture.accountListeners.add(fn), removeChangeListener: fn => fixture.accountListeners.delete(fn)};
+   if (name === "ChannelStore") return {getChannel: id => id === "666666666666666666" ? {id, guild_id:"555555555555555555", name:"follow-ups"} : {id, name:""}};
+   if (name === "GuildStore") return {getGuild: () => ({name:"Workspace"})};
+  },
+  getByKeys: () => fixture.noRouter ? null : {transitionTo: p => fixture.routes.push(p)}
+ },
+ ContextMenu: {
+  patch: (name, fn) => { fixture.patches.set(name, fn); return () => fixture.patches.delete(name); },
+  buildItem: props => ({type:"MockMenuItem", props}),
+  buildMenuChildren: setup => setup.map(props => ({type:"MockMenuItem", props})),
+ },
+ React: {cloneElement: (el, props) => ({...el, key:props.key, props:{...el.props, ...props}})},
+ DOM: {
+  addStyle: (id, css) => { const style = document.createElement("style"); style.id = id; style.textContent = css; document.head.append(style); },
+  removeStyle: id => document.getElementById(id)?.remove()
+ },
+ UI: {
+  showToast: (content, options) => fixture.toasts.push({content, options}),
+  showNotification: options => { if (fixture.noAlerts) return undefined; const handle = {options, close() { this.closed = true; options.onClose?.(); }}; fixture.alerts.push(handle); return handle; }
+ }
+};
+class MockNotification {
+ static permission = "granted";
+ static async requestPermission() { return this.permission; }
+ constructor(title, options) { this.title = title; this.options = options; fixture.native.push(this); }
+ close() { this.closed = true; this.onclose?.(); }
+}
+window.Notification = MockNotification;
+</script></html>

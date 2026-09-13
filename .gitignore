@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+*.config.json
+*.log
+.DS_Store
+__pycache__/
+.venv/
+test/ui-results.json
+test/ui-preview.png
+test/core-results.txt
+SHA256SUMS.txt
+VALIDATION.json

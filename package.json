@@ -1,0 +1,16 @@
+{
+  "name": "remind-me-later",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Private local message reminders for BetterDiscord, with presets, a reminder inbox, snooze and desktop alerts.",
+  "main": "RemindMeLater.plugin.js",
+  "license": "MIT",
+  "author": "Microck",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "check": "node --check RemindMeLater.plugin.js && node --check scripts/publish.cjs",
+    "test": "node --test test/core.test.cjs",
+    "test:ui": "python test/ui_smoke.py",
+    "publish:github": "node scripts/publish.cjs"
+  }
+}
