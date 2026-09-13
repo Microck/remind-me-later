@@ -1,7 +1,7 @@
 /**
  * @name Remind Me Later
  * @author Microck
- * @version 1.0.0
+ * @version 1.0.1
  * @description Private, local message reminders. Right-click a message, pick a time, and jump back when it is due. No bot, server, telemetry, or external libraries.
  * @website https://github.com/Microck/remind-me-later
  * @source https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js
@@ -119,55 +119,60 @@ function upsert(state, target, dueAt, note = "", now = Date.now()) {
 }
 
 const STYLES = `
-:host { font: 14px/1.5 var(--font-primary, system-ui, sans-serif); color: var(--text-normal, #e9e9ee); }
+:host { font: 14px/1.4 var(--font-primary, system-ui, sans-serif); color: #fff; }
 *, *::before, *::after { box-sizing: border-box; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { opacity: .5; cursor: not-allowed; }
-button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #a7adff; outline-offset: 3px; }
-.dock { position: fixed; right: 20px; bottom: 86px; z-index: 1002; display: flex; gap: 10px; align-items: center; border: 1px solid #ffffff24; border-radius: 100px; padding: 10px 15px; color: var(--text-normal, #e9e9ee); background: var(--background-floating, #18191c); box-shadow: 0 5px 24px #0005; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.dock { position: fixed; right: 16px; bottom: 80px; z-index: 1002; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #3a3a3a; border-radius: 4px; padding: 0; color: #fff; background: #000; box-shadow: 0 4px 12px #0008; }
 .dock.left { right: auto; left: 88px; }
-.dock[data-due="true"] { border-color: #eeb451; }
-.count { border-radius: 100px; padding: 0 7px; background: #eeb451; color: #171717; font-weight: 700; min-width: 23px; text-align: center; }
-.clock { font-size: 18px; line-height: 1; }
-dialog { padding: 0; border: 1px solid #ffffff20; border-radius: 16px; width: min(680px, calc(100vw - 32px)); max-height: min(820px, calc(100vh - 48px)); color: var(--text-normal, #e9e9ee); background: var(--background-primary, #242429); box-shadow: 0 20px 90px #0007; overflow: auto; }
-dialog::backdrop { background: #0009; }
-.shell { padding: 24px; }
+.dock:hover { background: #151515; }
+.dock[data-due="true"] { border-color: #fff; }
+.count { position: absolute; top: -7px; right: -7px; display: grid; place-items: center; min-width: 18px; height: 18px; border: 2px solid #000; border-radius: 9px; padding: 0 4px; background: #fff; color: #000; font-size: 11px; font-weight: 700; }
+.clock { font-size: 13px; font-weight: 700; line-height: 1; }
+dialog { padding: 0; border: 1px solid #303030; border-radius: 8px; width: min(560px, calc(100vw - 24px)); max-height: min(720px, calc(100vh - 32px)); color: #fff; background: #000; box-shadow: 0 18px 56px #000c; overflow: auto; }
+dialog::backdrop { background: #000b; }
+.shell { padding: 20px; }
 .header, .row, .actions, .tabs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.header { justify-content: space-between; margin-bottom: 16px; }
-h2 { margin: 0; font-size: 22px; letter-spacing: -.4px; } h3 { margin: 0; font-size: 15px; }
-p { margin: 8px 0 16px; }
-.muted { color: var(--text-muted, #b5b6c0); font-size: 13px; }
-.kicker { color: var(--text-muted, #b5b6c0); font-size: 11px; letter-spacing: 1.7px; text-transform: uppercase; }
-.btn { border: 1px solid #ffffff1e; border-radius: 8px; padding: 7px 12px; background: var(--background-secondary, #303139); color: var(--text-normal, #e9e9ee); }
-.btn:hover { filter: brightness(1.18); }
-.primary, .tab[aria-pressed="true"] { background: #5865f2; color: #fff; border-color: transparent; }
-.danger { color: #ffb2b2; }
-.close { font-size: 22px; line-height: 1; padding: 6px 10px; }
-input:not([type="checkbox"]), textarea, select { width: 100%; border: 1px solid #ffffff26; border-radius: 8px; padding: 10px; color: var(--text-normal, #e9e9ee); background: var(--input-background, #16171b); }
-textarea { min-height: 78px; resize: vertical; }
-label.field { display: block; margin: 16px 0; }
+.header { justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #292929; }
+h2 { margin: 0; font-size: 18px; line-height: 1.25; } h3 { margin: 0; font-size: 14px; }
+p { margin: 8px 0 12px; }
+.muted { color: #a8a8ad; font-size: 12px; }
+.btn { min-height: 32px; border: 1px solid #343434; border-radius: 4px; padding: 5px 10px; background: #181818; color: #fff; }
+.btn:hover { background: #242424; }
+.btn:active { background: #303030; }
+.primary { border-color: #fff; background: #fff; color: #000; font-weight: 600; }
+.primary:hover { background: #dedede; }
+.danger { color: #ff8088; }
+.close { min-width: 32px; border-color: transparent; background: transparent; font-size: 20px; line-height: 1; padding: 3px 8px; }
+input:not([type="checkbox"]), textarea, select { width: 100%; border: 1px solid #343434; border-radius: 4px; padding: 8px 10px; color: #fff; background: #090909; }
+textarea { min-height: 72px; resize: vertical; }
+label.field { display: block; margin: 14px 0; }
 label.field > span { display: block; margin-bottom: 6px; }
-.actions { margin-top: 14px; }
-.tabs { margin: 16px 0 12px; }
-.search { margin-bottom: 12px; }
-.list { display: grid; gap: 12px; max-height: 430px; overflow: auto; padding: 3px; }
-.card { border: 1px solid #ffffff1c; border-radius: 12px; padding: 15px; background: var(--background-secondary, #202127); overflow-wrap: anywhere; }
-.card.due { border-left: 3px solid #eeb451; }
+.actions { margin-top: 12px; }
+.tabs { gap: 18px; margin: 12px 0; border-bottom: 1px solid #292929; }
+.tab { min-height: 34px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 4px 0; background: transparent; color: #a8a8ad; }
+.tab:hover { background: transparent; color: #fff; }
+.tab[aria-pressed="true"] { border-bottom-color: #fff; color: #fff; }
+.search { margin-bottom: 4px; }
+.list { display: grid; max-height: 380px; overflow: auto; }
+.card { border-bottom: 1px solid #292929; padding: 14px 0; background: transparent; overflow-wrap: anywhere; }
+.card.due { box-shadow: inset 2px 0 0 #fff; padding-left: 12px; }
 .card .actions { gap: 6px; }
 .card .btn, .card select { font-size: 12px; padding: 6px 9px; }
 .card select { width: auto; max-width: 170px; }
-.preview { white-space: pre-wrap; margin: 10px 0; font-size: 13px; color: var(--text-muted, #b5b6c0); }
+.preview { white-space: pre-wrap; margin: 10px 0; font-size: 13px; color: #a8a8ad; }
 .note { white-space: pre-wrap; margin: 8px 0; }
-.error { color: #ffb2b2; margin: 12px 0; }
-.success { color: #9be2b8; margin: 12px 0; }
-.empty { text-align: center; padding: 28px 16px; color: var(--text-muted, #b5b6c0); }
-.setting { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid #ffffff14; }
-.setting input { margin-top: 6px; accent-color: #5865f2; width: 17px; height: 17px; flex: 0 0 auto; }
+.error { color: #ff8088; margin: 12px 0; }
+.success { color: #7ee2a8; margin: 12px 0; }
+.empty { padding: 28px 0; color: #a8a8ad; }
+.setting { display: flex; gap: 10px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid #292929; }
+.setting input { margin-top: 4px; accent-color: #fff; width: 16px; height: 16px; flex: 0 0 auto; }
 .setting span { display: block; }
-.settings-panel { padding: 12px; }
+.settings-panel { padding: 4px; }
 [hidden] { display: none !important; }
-@media (max-width: 500px) { .shell { padding: 16px; } .dock { bottom: 80px; right: 10px; } .list { max-height: 48vh; } }
+@media (max-width: 500px) { .shell { padding: 16px; } .dock { bottom: 72px; right: 10px; } .list { max-height: 48vh; } }
 `;
 const CHANNEL_STYLE = `a[data-lr-due] { box-shadow: inset 3px 0 0 #eeb451 !important; border-radius: 4px; }
 a[data-lr-due]:focus-visible { outline: 2px solid #eeb451; }`;
@@ -183,7 +188,7 @@ module.exports = class RemindMeLater {
     start() {
         if (this.running) return;
         this.api = globalThis.BdApi;
-        if (!this.api?.Data?.load || !this.api?.ContextMenu?.patch || !this.api?.ContextMenu?.buildMenuChildren) throw new Error("Remind Me Later requires BetterDiscord with the Data and ContextMenu APIs.");
+        if (!this.api?.Data?.load || !this.api?.ContextMenu?.patch || !this.api?.ContextMenu?.buildItem) throw new Error("Remind Me Later requires BetterDiscord with the Data and ContextMenu APIs.");
         this.running = true;
         try {
             this.userStore = this.getStore("UserStore");
@@ -304,11 +309,11 @@ module.exports = class RemindMeLater {
             items.push({id: "lr-custom", label: "Custom…", action: () => this.run(target.owner, () => this.openCustom({...target, note: existing?.note || ""}))});
             if (existing) items.push({id: "lr-cancel", label: "Cancel this reminder", action: () => this.run(target.owner, () => this.remove(existing.id, target.owner))});
             items.push({type: "separator"}, {id: "lr-manage", label: "Manage reminders…", action: () => this.run(target.owner, () => this.openManager())});
-            const group = this.api.ContextMenu.buildMenuChildren([{type: "group", items: [{type: "submenu", id: "lr-remind", label: existing ? "Reschedule reminder" : "Remind me", items}]}])[0];
+            const submenu = this.api.ContextMenu.buildItem({type: "submenu", id: "lr-remind", label: existing ? "Reschedule reminder" : "Remind me", items});
             const children = tree.props.children;
             if (Array.isArray(children)) {
-                if (!children.some(c => c?.key === "lr-group" || c?.props?.id === "lr-group")) children.push(this.api.React.cloneElement(group, {key: "lr-group", id: "lr-group"}));
-            } else tree.props.children = [children, this.api.React.cloneElement(group, {key: "lr-group", id: "lr-group"})].filter(Boolean);
+                if (!children.some(c => c?.props?.id === "lr-remind")) children.push(submenu);
+            } else tree.props.children = [children, submenu].filter(Boolean);
         } catch (error) { this.report(error); }
     }
     schedule(target, dueAt, note = "") {
@@ -487,14 +492,14 @@ module.exports = class RemindMeLater {
         this.dock.className = `dock${this.state.settings.dockLeft ? " left" : ""}`;
         this.dock.setAttribute("data-due", String(due > 0));
         this.dock.setAttribute("aria-label", this.loadError ? "Reminders: storage error" : `Reminders: ${due} due, ${this.state.reminders.length - due} upcoming`);
-        this.dock.replaceChildren(this.element("span", {class: "clock", "aria-hidden": "true", text: "◷"}), this.element("span", {text: this.loadError ? "Reminder error" : "Reminders"}));
+        this.dock.replaceChildren(this.element("span", {class: "clock", "aria-hidden": "true", text: this.loadError ? "!" : "R"}));
         if (due) this.dock.append(this.element("span", {class: "count", text: String(due)}));
     }
     openDialog(title) {
         this.closeDialog();
         const dialog = this.element("dialog", {"aria-label": title});
         const shell = this.element("div", {class: "shell"});
-        const heading = this.element("div", {}, this.element("div", {class: "kicker", text: "LOCAL REMINDERS · ONLY YOU"}), this.element("h2", {text: title}));
+        const heading = this.element("h2", {text: title});
         const close = this.button("×", () => this.closeDialog(), "close"); close.setAttribute("aria-label", "Close");
         shell.append(this.element("div", {class: "header"}, heading, close)); dialog.append(shell);
         dialog.addEventListener("cancel", event => { event.preventDefault(); this.closeDialog(); });

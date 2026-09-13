@@ -5,7 +5,7 @@
   <p>private message reminders for BetterDiscord</p>
 
   <p>
-    <a href="https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js"><img src="https://img.shields.io/badge/download-plugin-000000?style=flat-square" alt="download plugin badge"></a>
+    <a href="https://github.com/Microck/remind-me-later/releases/latest/download/RemindMeLater.plugin.js"><img src="https://img.shields.io/badge/download-plugin-000000?style=flat-square" alt="download plugin badge"></a>
     <a href="https://github.com/Microck/remind-me-later/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/Microck/remind-me-later/test.yml?branch=main&style=flat-square&label=ci&color=000000" alt="ci badge"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-mit-000000?style=flat-square" alt="license badge"></a>
   </p>
@@ -15,7 +15,7 @@
 
 `remind me later` adds private, local message reminders to Discord. right-click a message, pick a time, and jump back when it is due. there is no bot, server, account, telemetry, or runtime dependency.
 
-[download](https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js) | [testing](TESTING.md) | [security](SECURITY.md) | [changelog](CHANGELOG.md)
+[download](https://github.com/Microck/remind-me-later/releases/latest/download/RemindMeLater.plugin.js) | [testing](TESTING.md) | [security](SECURITY.md) | [changelog](CHANGELOG.md)
 
 ## why
 
@@ -32,7 +32,7 @@ Discord has no built-in way to bring a message back at a useful time. this plugi
 
 you need the Discord desktop app with [BetterDiscord](https://betterdiscord.app/) installed.
 
-1. download [`RemindMeLater.plugin.js`](https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js).
+1. download [`RemindMeLater.plugin.js`](https://github.com/Microck/remind-me-later/releases/latest/download/RemindMeLater.plugin.js).
 2. open Discord, then go to User Settings > BetterDiscord > Plugins > Open Plugins Folder.
 3. put `RemindMeLater.plugin.js` in that folder.
 4. enable **Remind Me Later**.

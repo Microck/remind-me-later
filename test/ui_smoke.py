@@ -28,6 +28,7 @@ with sync_playwright() as pw:
     page.set_content((ROOT / "test/mock-discord.html").read_text())
     page.add_script_tag(content=(ROOT / "RemindMeLater.plugin.js").read_text())
     page.evaluate("window.plugin = new module.exports(); plugin.start(); plugin.state.settings.sound = false")
+    assert page.evaluate("typeof BdApi.React") == "undefined"
     expect(page.get_by_role("button", name="Reminders: 0 due, 0 upcoming")).to_be_visible()
     assert page.evaluate("fixture.patches.size") == 1
     passed("start installs context-menu hook and private dock")
@@ -36,9 +37,10 @@ with sync_playwright() as pw:
     page.evaluate("""() => {
       fixture.tree = {props:{children:[]}};
       fixture.patches.get('message')(fixture.tree, {message:{id:'444444444444444444',channel_id:'333333333333333333',content:'not stored without opt-in'}});
-      fixture.menu = fixture.tree.props.children[0].props.items[0];
+      fixture.menu = fixture.tree.props.children[0].props;
       fixture.menu.items[0].action();
     }""")
+    assert page.evaluate("fixture.menu.id") == "lr-remind"
     assert page.evaluate("fixture.menu.items.slice(0,5).map(i=>i.label)") == ["In 15 minutes", "In 30 minutes", "In 1 hour", "In 1 day", "In 1 week"]
     assert page.evaluate("plugin.state.reminders[0].preview") == ""
     assert page.evaluate("plugin.state.reminders.length") == 1

@@ -32,9 +32,7 @@ window.BdApi = {
  ContextMenu: {
   patch: (name, fn) => { fixture.patches.set(name, fn); return () => fixture.patches.delete(name); },
   buildItem: props => ({type:"MockMenuItem", props}),
-  buildMenuChildren: setup => setup.map(props => ({type:"MockMenuItem", props})),
  },
- React: {cloneElement: (el, props) => ({...el, key:props.key, props:{...el.props, ...props}})},
  DOM: {
   addStyle: (id, css) => { const style = document.createElement("style"); style.id = id; style.textContent = css; document.head.append(style); },
   removeStyle: id => document.getElementById(id)?.remove()

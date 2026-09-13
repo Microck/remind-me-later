@@ -1,4 +1,10 @@
-# remind me later v1.0.0
+# remind me later v1.0.1
+
+- Fix the message context-menu item against the current BetterDiscord API.
+- Replace the oversized card UI with a compact, true-black interface.
+- Reduce the floating launcher to a 36px square button.
+
+## v1.0.0
 
 initial implementation. live Discord desktop testing is still pending.
 
