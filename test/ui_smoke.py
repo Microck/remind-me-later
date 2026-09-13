@@ -31,15 +31,21 @@ with sync_playwright() as pw:
     assert page.evaluate("typeof BdApi.React") == "undefined"
     expect(page.get_by_role("button", name="Reminders: 0 due, 0 upcoming")).to_be_visible()
     assert page.evaluate("fixture.patches.size") == 1
+    assert page.evaluate("[...fixture.patches.keys()][0]") == "message"
     passed("start installs context-menu hook and private dock")
 
-    # Verify the actual patch produces all presets and scheduling actions.
+    # BetterDiscord now passes menu-render props. Recover the message from props.target and MessageStore.
     page.evaluate("""() => {
+      const messageElement = document.createElement('div');
+      messageElement.id = 'chat-messages-333333333333333333-444444444444444444';
+      const messageTarget = document.createElement('span');
+      messageElement.append(messageTarget);
+      document.body.append(messageElement);
       fixture.tree = {props:{children:[]}};
       fixture.messageMenuPatch = [...fixture.patches.values()][0];
       fixture.otherTree = {props:{children:[]}};
-      fixture.messageMenuPatch(fixture.otherTree, {});
-      fixture.messageMenuPatch(fixture.tree, {message:{id:'444444444444444444',channel_id:'333333333333333333',content:'not stored without opt-in'}});
+      fixture.messageMenuPatch(fixture.otherTree, {target:document.body});
+      fixture.messageMenuPatch(fixture.tree, {target:messageTarget});
       fixture.menu = fixture.tree.props.children[0].props;
       fixture.menu.items[0].action();
     }""")
@@ -48,8 +54,18 @@ with sync_playwright() as pw:
     assert page.evaluate("fixture.menu.items.slice(0,5).map(i=>i.label)") == ["In 15 minutes", "In 30 minutes", "In 1 hour", "In 1 day", "In 1 week"]
     assert page.evaluate("plugin.state.reminders[0].preview") == ""
     assert page.evaluate("plugin.state.reminders.length") == 1
-    page.evaluate("fixture.messageMenuPatch(fixture.tree, {message:{id:'444444444444444444',channel_id:'333333333333333333'}})")
-    assert page.evaluate("fixture.tree.props.children.length") == 1
+    page.evaluate("""() => {
+      plugin.state.settings.savePreview = true;
+      fixture.previewTree = {props:{children:[]}};
+      const target = document.querySelector('#chat-messages-333333333333333333-444444444444444444 span');
+      fixture.messageMenuPatch(fixture.previewTree, {target});
+      fixture.messageMenuPatch(fixture.previewTree, {target});
+      fixture.previewTree.props.children[0].props.items[0].action();
+      plugin.state.settings.savePreview = false;
+    }""")
+    assert page.evaluate("fixture.previewTree.props.children.length") == 1
+    assert page.evaluate("plugin.state.reminders[0].preview") == "not stored without opt-in"
+    assert page.evaluate("plugin.state.reminders.length") == 1
     passed("message menu: presets, scheduling, duplicate-patch protection, preview privacy")
 
     page.get_by_role("button", name="Reminders: 0 due, 1 upcoming").click()

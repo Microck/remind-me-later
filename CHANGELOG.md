@@ -1,4 +1,8 @@
-# remind me later v1.0.2
+# remind me later v1.0.3
+
+- Read the clicked message from BetterDiscord's current menu target instead of the removed `props.message` callback field.
+
+## v1.0.2
 
 - Match message menus by their message payload instead of Discord's private menu name.
 - Add a saved setting to hide the floating reminder button.

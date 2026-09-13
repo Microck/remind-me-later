@@ -29,6 +29,11 @@ test("parse server, DM, canary and PTB links without network access", () => {
     }
     assert.equal(C.parseMessageLink(`https://discord.com/channels/${OWNER}/${TARGET.channelId}/${TARGET.messageId}/?foo=bar`).guildId, OWNER);
 });
+test("parse Discord message element IDs", () => {
+    assert.deepEqual(C.parseMessageElementId(`chat-messages-${TARGET.channelId}-${TARGET.messageId}`), {channelId: TARGET.channelId, messageId: TARGET.messageId});
+    assert.equal(C.parseMessageElementId(`message-${TARGET.channelId}-${TARGET.messageId}`), null);
+    assert.equal(C.parseMessageElementId("chat-messages-not-an-id"), null);
+});
 for (const link of ["javascript:alert(1)", "https://discord.com.evil.test/channels/@me/12345/67890", "http://discord.com/channels/@me/12345/67890",
     "https://discord.com/channels/@me/12345", "https://discord.com:8443/channels/@me/12345/67890", "https://user@discord.com/channels/@me/12345/67890",
     "https://example.com/channels/@me/12345/67890", "https://discord.com/channels/@me/12345/67890/extra"]) {

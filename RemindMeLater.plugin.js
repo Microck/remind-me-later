@@ -1,7 +1,7 @@
 /**
  * @name Remind Me Later
  * @author Microck
- * @version 1.0.2
+ * @version 1.0.3
  * @description Private, local message reminders. Right-click a message, pick a time, and jump back when it is due. No bot, server, telemetry, or external libraries.
  * @website https://github.com/Microck/remind-me-later
  * @source https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js
@@ -75,6 +75,10 @@ function parseMessageLink(input) {
 function messagePath(r) {
     if (!validTarget(r)) throw new Error("Invalid message reference.");
     return `/channels/${r.guildId}/${r.channelId}/${r.messageId}`;
+}
+function parseMessageElementId(value) {
+    const match = /^chat-messages-(\d{5,25})-(\d{5,25})$/.exec(String(value || ""));
+    return match ? {channelId: match[1], messageId: match[2]} : null;
 }
 function validateState(raw) {
     if (raw === undefined || raw === null) return freshState();
@@ -194,11 +198,12 @@ module.exports = class RemindMeLater {
             this.userStore = this.getStore("UserStore");
             this.channelStore = this.getStore("ChannelStore");
             this.guildStore = this.getStore("GuildStore");
+            this.messageStore = this.getStore("MessageStore");
             if (!this.userStore?.getCurrentUser) throw new Error("Discord's UserStore is unavailable. Update BetterDiscord and reload Discord.");
             this.mount();
             this.api.DOM?.addStyle(NAME, CHANNEL_STYLE);
-            // Discord's private menu names change. The message payload is the stable boundary.
-            this.unpatch.push(this.api.ContextMenu.patch(/.*/, (tree, props) => this.patchMessageMenu(tree, props)));
+            // Current BetterDiscord menu callbacks expose the clicked element through props.target.
+            this.unpatch.push(this.api.ContextMenu.patch("message", (tree, props) => this.patchMessageMenu(tree, props)));
             this.userStore.addChangeListener?.(this.accountChanged);
             window.addEventListener("focus", this.wake);
             document.addEventListener("visibilitychange", this.wake);
@@ -300,10 +305,17 @@ module.exports = class RemindMeLater {
             preview: this.state.settings.savePreview ? text(message?.content, 280) : ""};
         return validTarget(target) && target.owner ? target : null;
     }
+    captureMenuTarget(props) {
+        const messageElement = props?.target?.closest?.('[id^="chat-messages-"]');
+        const ids = parseMessageElementId(messageElement?.id);
+        if (!ids) return null;
+        const content = this.messageStore?.getMessage?.(ids.channelId, ids.messageId)?.content;
+        return this.capture({id: ids.messageId, channel_id: ids.channelId, content}, this.channelStore?.getChannel?.(ids.channelId));
+    }
     patchMessageMenu(tree, props) {
-        if (!this.running || !props?.message || !tree?.props) return;
+        if (!this.running || !tree?.props) return;
         try {
-            const target = this.capture(props.message, props.channel);
+            const target = this.captureMenuTarget(props);
             if (!target || this.loadError) return;
             const existing = this.state.reminders.find(r => r.channelId === target.channelId && r.messageId === target.messageId);
             const items = PRESETS.map(([label, delay], i) => ({id: `lr-preset-${i}`, label: `In ${label}`, action: () => this.run(target.owner, () => this.schedule(target, Date.now() + delay, existing?.note || ""))}));
@@ -676,4 +688,4 @@ module.exports = class RemindMeLater {
     }
 };
 // Pure helpers exposed for dependency-free automated tests; unused by BetterDiscord.
-module.exports.testing = Object.freeze({parseDuration, parseLocalTime, localInput, parseMessageLink, messagePath, validTarget, validateState, freshState, advance, upsert, PRESETS, MAX_DELAY, MAX_REMINDERS});
+module.exports.testing = Object.freeze({parseDuration, parseLocalTime, localInput, parseMessageLink, parseMessageElementId, messagePath, validTarget, validateState, freshState, advance, upsert, PRESETS, MAX_DELAY, MAX_REMINDERS});

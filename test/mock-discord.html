@@ -13,6 +13,7 @@ small { color:#a4a5af; } .test-card { border:1px solid #ffffff20; border-radius:
 window.module = {exports: {}};
 window.fixture = {
  account: "111111111111111111", store: new Map(), toasts: [], alerts: [], patches: new Map(), accountListeners: new Set(), routes: [], saves: [], errors: [], native: [],
+ messages: new Map([["333333333333333333:444444444444444444", {id:"444444444444444444", channel_id:"333333333333333333", content:"not stored without opt-in"}]]),
  switchAccount(id) { this.account = id; for (const fn of this.accountListeners) fn(); }
 };
 window.addEventListener("error", e => fixture.errors.push(String(e.error || e.message)));
@@ -26,6 +27,7 @@ window.BdApi = {
    if (name === "UserStore") return {getCurrentUser: () => fixture.account ? {id: fixture.account} : null, addChangeListener: fn => fixture.accountListeners.add(fn), removeChangeListener: fn => fixture.accountListeners.delete(fn)};
    if (name === "ChannelStore") return {getChannel: id => id === "666666666666666666" ? {id, guild_id:"555555555555555555", name:"follow-ups"} : {id, name:""}};
    if (name === "GuildStore") return {getGuild: () => ({name:"Workspace"})};
+   if (name === "MessageStore") return {getMessage: (channelId, messageId) => fixture.messages.get(`${channelId}:${messageId}`)};
   },
   getByKeys: () => fixture.noRouter ? null : {transitionTo: p => fixture.routes.push(p)}
  },
