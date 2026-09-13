@@ -36,15 +36,19 @@ with sync_playwright() as pw:
     # Verify the actual patch produces all presets and scheduling actions.
     page.evaluate("""() => {
       fixture.tree = {props:{children:[]}};
-      fixture.patches.get('message')(fixture.tree, {message:{id:'444444444444444444',channel_id:'333333333333333333',content:'not stored without opt-in'}});
+      fixture.messageMenuPatch = [...fixture.patches.values()][0];
+      fixture.otherTree = {props:{children:[]}};
+      fixture.messageMenuPatch(fixture.otherTree, {});
+      fixture.messageMenuPatch(fixture.tree, {message:{id:'444444444444444444',channel_id:'333333333333333333',content:'not stored without opt-in'}});
       fixture.menu = fixture.tree.props.children[0].props;
       fixture.menu.items[0].action();
     }""")
+    assert page.evaluate("fixture.otherTree.props.children.length") == 0
     assert page.evaluate("fixture.menu.id") == "lr-remind"
     assert page.evaluate("fixture.menu.items.slice(0,5).map(i=>i.label)") == ["In 15 minutes", "In 30 minutes", "In 1 hour", "In 1 day", "In 1 week"]
     assert page.evaluate("plugin.state.reminders[0].preview") == ""
     assert page.evaluate("plugin.state.reminders.length") == 1
-    page.evaluate("fixture.patches.get('message')(fixture.tree, {message:{id:'444444444444444444',channel_id:'333333333333333333'}})")
+    page.evaluate("fixture.messageMenuPatch(fixture.tree, {message:{id:'444444444444444444',channel_id:'333333333333333333'}})")
     assert page.evaluate("fixture.tree.props.children.length") == 1
     passed("message menu: presets, scheduling, duplicate-patch protection, preview privacy")
 
@@ -108,7 +112,11 @@ with sync_playwright() as pw:
     assert page.evaluate("plugin.state.reminders.some(r=>r.preview==='optional preview')")
     page.get_by_role("checkbox", name="Save message previews", exact=False).uncheck()
     assert page.evaluate("plugin.state.reminders.every(r=>r.preview==='')")
-    passed("settings: native alert opt-in, test alert, and preview erasure")
+    page.get_by_role("checkbox", name="Show reminder button", exact=False).uncheck()
+    expect(page.get_by_role("button", name="Reminders:", exact=False)).to_be_hidden()
+    page.get_by_role("checkbox", name="Show reminder button", exact=False).check()
+    expect(page.get_by_role("button", name="Reminders:", exact=False)).to_be_visible()
+    passed("settings: native alert opt-in, preview erasure, and button visibility")
 
     page.get_by_role("checkbox", name="Place the reminder button on the left", exact=False).check()
     assert page.locator(".dock.left").count() == 1

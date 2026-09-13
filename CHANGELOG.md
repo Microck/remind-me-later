@@ -1,4 +1,9 @@
-# remind me later v1.0.1
+# remind me later v1.0.2
+
+- Match message menus by their message payload instead of Discord's private menu name.
+- Add a saved setting to hide the floating reminder button.
+
+## v1.0.1
 
 - Fix the message context-menu item against the current BetterDiscord API.
 - Replace the oversized card UI with a compact, true-black interface.

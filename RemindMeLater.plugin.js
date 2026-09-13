@@ -1,7 +1,7 @@
 /**
  * @name Remind Me Later
  * @author Microck
- * @version 1.0.1
+ * @version 1.0.2
  * @description Private, local message reminders. Right-click a message, pick a time, and jump back when it is due. No bot, server, telemetry, or external libraries.
  * @website https://github.com/Microck/remind-me-later
  * @source https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js
@@ -22,7 +22,7 @@ const PRESETS = Object.freeze([
     ["15 minutes", 15 * MINUTE], ["30 minutes", 30 * MINUTE],
     ["1 hour", 60 * MINUTE], ["1 day", DAY], ["1 week", 7 * DAY]
 ]);
-const DEFAULTS = Object.freeze({desktop: false, desktopPreview: false, sound: true, savePreview: false, highlight: true, dockLeft: false});
+const DEFAULTS = Object.freeze({desktop: false, desktopPreview: false, sound: true, savePreview: false, highlight: true, showButton: true, dockLeft: false});
 
 function text(value, max) { return typeof value === "string" ? value.slice(0, max) : ""; }
 function freshState() { return {schema: 1, settings: {...DEFAULTS}, reminders: []}; }
@@ -197,7 +197,8 @@ module.exports = class RemindMeLater {
             if (!this.userStore?.getCurrentUser) throw new Error("Discord's UserStore is unavailable. Update BetterDiscord and reload Discord.");
             this.mount();
             this.api.DOM?.addStyle(NAME, CHANNEL_STYLE);
-            this.unpatch.push(this.api.ContextMenu.patch("message", (tree, props) => this.patchMessageMenu(tree, props)));
+            // Discord's private menu names change. The message payload is the stable boundary.
+            this.unpatch.push(this.api.ContextMenu.patch(/.*/, (tree, props) => this.patchMessageMenu(tree, props)));
             this.userStore.addChangeListener?.(this.accountChanged);
             window.addEventListener("focus", this.wake);
             document.addEventListener("visibilitychange", this.wake);
@@ -487,7 +488,7 @@ module.exports = class RemindMeLater {
     }
     refreshDock() {
         if (!this.dock) return;
-        this.dock.hidden = !this.running || !this.accountId;
+        this.dock.hidden = !this.running || !this.accountId || !this.state.settings.showButton;
         const due = this.state.reminders.filter(r => r.status === "due").length;
         this.dock.className = `dock${this.state.settings.dockLeft ? " left" : ""}`;
         this.dock.setAttribute("data-due", String(due > 0));
@@ -631,6 +632,7 @@ module.exports = class RemindMeLater {
             ["desktopPreview", "Show details in desktop notifications", "May expose your note and saved preview on the lock screen. Off by default."],
             ["savePreview", "Save message previews", "Opt in to store up to 280 characters from messages you explicitly select. Turning this off erases existing previews."],
             ["highlight", "Highlight chats with due reminders", "An amber stripe on visible channel links; never changes Discord's real unread or mention state."],
+            ["showButton", "Show reminder button", "Keep the small R button visible over Discord. The inbox remains available from message menus and this settings panel."],
             ["dockLeft", "Place the reminder button on the left", "Moves the private reminder button away from the bottom-right corner."]
         ];
         for (const [key, label, help] of settings) {

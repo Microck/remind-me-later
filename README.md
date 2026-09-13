@@ -26,6 +26,7 @@ Discord has no built-in way to bring a message back at a useful time. this plugi
 - a searchable inbox for due and upcoming reminders
 - snooze, reschedule, edit, open, finish, and delete actions
 - optional desktop notifications and a local chime
+- an optional floating inbox button that can be hidden in settings
 - no network requests, remote code, message sends, reactions, or fake pings
 
 ## install

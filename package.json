@@ -1,6 +1,6 @@
 {
   "name": "remind-me-later",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Private local message reminders for BetterDiscord, with presets, a reminder inbox, snooze and desktop alerts.",
   "main": "RemindMeLater.plugin.js",
