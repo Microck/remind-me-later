@@ -18,6 +18,9 @@ window.fixture = {
 };
 window.addEventListener("error", e => fixture.errors.push(String(e.error || e.message)));
 window.BdApi = {
+ React: {
+  cloneElement: (element, props) => ({...element, props: {...element.props, ...props}})
+ },
  Data: {
   load: (plugin, key) => fixture.store.has(key) ? structuredClone(fixture.store.get(key)) : undefined,
   save: (plugin, key, value) => { if (fixture.failSave) throw new Error("Disk full"); fixture.store.set(key, structuredClone(value)); fixture.saves.push(key); }

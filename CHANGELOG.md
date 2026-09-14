@@ -1,4 +1,8 @@
-# remind me later v1.0.3
+# remind me later v1.0.4
+
+- Fix the reminder submenu insertion for BetterDiscord's current grouped message-menu tree.
+
+## v1.0.3
 
 - Read the clicked message from BetterDiscord's current menu target instead of the removed `props.message` callback field.
 

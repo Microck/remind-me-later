@@ -8,7 +8,7 @@ Chromium with a mocked BetterDiscord/Discord environment: 13 UI smoke checks pas
 
 The UI checks exercise startup, context-menu creation, all requested presets, custom validation, message-link input, search and filtering, safe text rendering, local due counts, chat stripes, notification actions, snooze, message routing, desktop notification opt-in, preview erasure, date editing without moving the deadline, Escape handling, account switching, stale callbacks, persistence across plugin restarts, settings panels, delete confirmation, and teardown.
 
-The Discord stores, menu components, router, BetterDiscord persistence/notification functions, and desktop Notification class are mocked. Actual BetterDiscord rendering, filesystem writes, OS notifications, chime audibility, and live Discord message jumps have not been verified. No live Discord session is available in this environment.
+The Discord stores, menu components, router, BetterDiscord persistence/notification functions, and desktop Notification class are mocked. Actual filesystem writes, OS notifications, chime audibility, and live Discord message jumps are not covered by the smoke suite. A live Discord desktop check on 2026-09-14 confirmed plugin startup, the current message element IDs, and BetterDiscord's grouped message-menu tree. The Computer Use adapter could not complete a native mouse click because this Discord window exposed no usable mouse geometry or screenshot.
 
 ## Run core tests
 

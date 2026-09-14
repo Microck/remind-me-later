@@ -1,7 +1,7 @@
 /**
  * @name Remind Me Later
  * @author Microck
- * @version 1.0.3
+ * @version 1.0.4
  * @description Private, local message reminders. Right-click a message, pick a time, and jump back when it is due. No bot, server, telemetry, or external libraries.
  * @website https://github.com/Microck/remind-me-later
  * @source https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js
@@ -192,7 +192,7 @@ module.exports = class RemindMeLater {
     start() {
         if (this.running) return;
         this.api = globalThis.BdApi;
-        if (!this.api?.Data?.load || !this.api?.ContextMenu?.patch || !this.api?.ContextMenu?.buildItem) throw new Error("Remind Me Later requires BetterDiscord with the Data and ContextMenu APIs.");
+        if (!this.api?.Data?.load || !this.api?.ContextMenu?.patch || !this.api?.ContextMenu?.buildItem || !this.api?.React?.cloneElement) throw new Error("Remind Me Later requires BetterDiscord with the Data, React, and ContextMenu APIs.");
         this.running = true;
         try {
             this.userStore = this.getStore("UserStore");
@@ -315,6 +315,9 @@ module.exports = class RemindMeLater {
     patchMessageMenu(tree, props) {
         if (!this.running || !tree?.props) return;
         try {
+            const children = tree.props.children;
+            const menuItems = Array.isArray(children) ? children : children?.props?.children;
+            if (Array.isArray(menuItems) && menuItems.some(c => c?.props?.id === "lr-remind")) return;
             const target = this.captureMenuTarget(props);
             if (!target || this.loadError) return;
             const existing = this.state.reminders.find(r => r.channelId === target.channelId && r.messageId === target.messageId);
@@ -323,10 +326,9 @@ module.exports = class RemindMeLater {
             if (existing) items.push({id: "lr-cancel", label: "Cancel this reminder", action: () => this.run(target.owner, () => this.remove(existing.id, target.owner))});
             items.push({type: "separator"}, {id: "lr-manage", label: "Manage reminders…", action: () => this.run(target.owner, () => this.openManager())});
             const submenu = this.api.ContextMenu.buildItem({type: "submenu", id: "lr-remind", label: existing ? "Reschedule reminder" : "Remind me", items});
-            const children = tree.props.children;
-            if (Array.isArray(children)) {
-                if (!children.some(c => c?.props?.id === "lr-remind")) children.push(submenu);
-            } else tree.props.children = [children, submenu].filter(Boolean);
+            if (Array.isArray(children)) tree.props.children = [...children, submenu];
+            else if (Array.isArray(menuItems)) tree.props.children = this.api.React.cloneElement(children, {children: [...menuItems, submenu]});
+            else tree.props.children = [children, submenu].filter(Boolean);
         } catch (error) { this.report(error); }
     }
     schedule(target, dueAt, note = "") {

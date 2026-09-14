@@ -28,7 +28,7 @@ with sync_playwright() as pw:
     page.set_content((ROOT / "test/mock-discord.html").read_text())
     page.add_script_tag(content=(ROOT / "RemindMeLater.plugin.js").read_text())
     page.evaluate("window.plugin = new module.exports(); plugin.start(); plugin.state.settings.sound = false")
-    assert page.evaluate("typeof BdApi.React") == "undefined"
+    assert page.evaluate("typeof BdApi.React.cloneElement") == "function"
     expect(page.get_by_role("button", name="Reminders: 0 due, 0 upcoming")).to_be_visible()
     assert page.evaluate("fixture.patches.size") == 1
     assert page.evaluate("[...fixture.patches.keys()][0]") == "message"
@@ -54,6 +54,15 @@ with sync_playwright() as pw:
     assert page.evaluate("fixture.menu.items.slice(0,5).map(i=>i.label)") == ["In 15 minutes", "In 30 minutes", "In 1 hour", "In 1 day", "In 1 week"]
     assert page.evaluate("plugin.state.reminders[0].preview") == ""
     assert page.evaluate("plugin.state.reminders.length") == 1
+    page.evaluate("""() => {
+      const target = document.querySelector('#chat-messages-333333333333333333-444444444444444444 span');
+      fixture.nestedTree = {props:{children:{type:'MockGroup', props:{children:[]}}}};
+      fixture.messageMenuPatch(fixture.nestedTree, {target});
+      fixture.messageMenuPatch(fixture.nestedTree, {target});
+      fixture.nestedMenu = fixture.nestedTree.props.children.props.children[0].props;
+    }""")
+    assert page.evaluate("fixture.nestedMenu.id") == "lr-remind"
+    assert page.evaluate("fixture.nestedTree.props.children.props.children.length") == 1
     page.evaluate("""() => {
       plugin.state.settings.savePreview = true;
       fixture.previewTree = {props:{children:[]}};
