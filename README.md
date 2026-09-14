@@ -50,6 +50,10 @@ the usual plugin folders are:
 
 right-click a message and choose **Remind me**. presets cover 15 minutes, 30 minutes, 1 hour, 1 day, and 1 week. custom input accepts values such as `45m`, `2h 30m`, or `1w 2d`, plus a date and time in your local timezone.
 
+<p align="center">
+  <img src="assets/remind-me.jpg" alt="Remind Me Later submenu in a Discord message context menu" width="770">
+</p>
+
 the private **Reminders** button opens the inbox. reminders stay there until you finish or snooze them. opening a message does not dismiss its reminder.
 
 when a reminder is due, the plugin can:
