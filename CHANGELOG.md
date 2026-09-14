@@ -1,4 +1,9 @@
-# remind me later v1.0.4
+# remind me later v1.1.0
+
+- Add a setting to keep reminder alerts open until the user dismisses them.
+- Clarify due reminder titles, locations, notes, and message-preview labels.
+
+## v1.0.4
 
 - Fix the reminder submenu insertion for BetterDiscord's current grouped message-menu tree.
 

@@ -61,6 +61,7 @@ const file = path.resolve(__dirname, "../RemindMeLater.plugin.js");
 test("fresh data has privacy-preserving defaults and independent copies", () => {
     const a = C.freshState(), b = C.validateState(undefined);
     assert.equal(a.settings.desktop, false); assert.equal(a.settings.desktopPreview, false); assert.equal(a.settings.savePreview, false);
+    assert.equal(a.settings.persistentAlerts, false);
     assert.equal(a.settings.showButton, true);
     a.settings.desktop = true; a.reminders.push({});
     assert.equal(b.settings.desktop, false); assert.equal(b.reminders.length, 0);

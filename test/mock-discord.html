@@ -12,7 +12,7 @@ small { color:#a4a5af; } .test-card { border:1px solid #ffffff20; border-radius:
 <script>
 window.module = {exports: {}};
 window.fixture = {
- account: "111111111111111111", store: new Map(), toasts: [], alerts: [], patches: new Map(), accountListeners: new Set(), routes: [], saves: [], errors: [], native: [],
+ account: "111111111111111111", store: new Map(), toasts: [], alerts: [], notices: [], patches: new Map(), accountListeners: new Set(), routes: [], saves: [], errors: [], native: [],
  messages: new Map([["333333333333333333:444444444444444444", {id:"444444444444444444", channel_id:"333333333333333333", content:"not stored without opt-in"}]]),
  switchAccount(id) { this.account = id; for (const fn of this.accountListeners) fn(); }
 };
@@ -44,7 +44,8 @@ window.BdApi = {
  },
  UI: {
   showToast: (content, options) => fixture.toasts.push({content, options}),
-  showNotification: options => { if (fixture.noAlerts) return undefined; const handle = {options, close() { this.closed = true; options.onClose?.(); }}; fixture.alerts.push(handle); return handle; }
+  showNotification: options => { if (fixture.noAlerts) return undefined; const handle = {options, close() { this.closed = true; options.onClose?.(); }}; fixture.alerts.push(handle); return handle; },
+  showNotice: (content, options) => { const notice = {content, options, closed: false}; const close = () => { if (!notice.closed) { notice.closed = true; options.onClose?.(); } }; notice.close = close; fixture.notices.push(notice); return close; }
  }
 };
 class MockNotification {

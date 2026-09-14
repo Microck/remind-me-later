@@ -110,6 +110,9 @@ with sync_playwright() as pw:
     expect(page.locator("#dm")).to_have_attribute("data-lr-due", "1")
     expect(page.locator("#server")).to_have_attribute("data-lr-due", "1")
     assert page.evaluate("fixture.alerts.length") == 2
+    assert page.evaluate("fixture.alerts[0].options.title") == "Reminder due"
+    assert page.evaluate("fixture.alerts[0].options.content") == "Direct message\nOpen the message to review it."
+    assert page.evaluate("fixture.alerts[0].options.duration") == 15000
     page.evaluate("plugin.tick()")
     assert page.evaluate("fixture.alerts.length") == 2
     passed("due reminders create local alerts and chat stripes without repeated notifications")
@@ -120,8 +123,9 @@ with sync_playwright() as pw:
     assert page.evaluate("fixture.alerts[0].closed")
     page.evaluate("fixture.alerts[1].options.actions[0].onClick()")
     assert page.evaluate("fixture.routes[0]") == "/channels/555555555555555555/666666666666666666/777777777777777777"
+    assert page.evaluate("fixture.alerts[1].closed")
     assert page.evaluate("plugin.state.reminders.filter(r=>r.status==='due').length") == 1
-    passed("notification snooze and message navigation work; opening does not dismiss")
+    passed("notification snooze and message navigation work; opening dismisses the alert")
 
     page.get_by_role("button", name="Reminders: 1 due, 1 upcoming").click()
     page.get_by_role("button", name="Done", exact=True).click()
@@ -129,9 +133,19 @@ with sync_playwright() as pw:
     page.get_by_role("button", name="Settings", exact=True).click()
     page.get_by_role("checkbox", name="Desktop notifications", exact=False).first.check()
     assert page.evaluate("plugin.state.settings.desktop")
+    page.get_by_role("checkbox", name="Keep reminder alerts open until dismissed", exact=False).check()
+    assert page.evaluate("plugin.state.settings.persistentAlerts")
     page.get_by_role("button", name="Test alert", exact=True).click()
     assert page.evaluate("fixture.native.length") == 1
     assert page.evaluate("fixture.native[0].options.body") == "Your private desktop notification is working."
+    assert page.evaluate("fixture.native[0].options.requireInteraction")
+    assert page.evaluate("fixture.notices.length") == 1
+    assert page.evaluate("fixture.notices[0].content") == "Remind Me Later test: This is private. No message was sent and no reminder was saved."
+    assert page.evaluate("fixture.notices[0].options.timeout") == 0
+    assert not page.evaluate("fixture.notices[0].closed")
+    page.evaluate("fixture.notices[0].close()")
+    page.get_by_role("checkbox", name="Keep reminder alerts open until dismissed", exact=False).uncheck()
+    assert not page.evaluate("plugin.state.settings.persistentAlerts")
     page.get_by_role("checkbox", name="Save message previews", exact=False).check()
     page.evaluate("plugin.schedule({...plugin.capture({id:'888888888888888888',channel_id:'333333333333333333',content:'optional preview'})},Date.now()+60000,'private note')")
     assert page.evaluate("plugin.state.reminders.some(r=>r.preview==='optional preview')")

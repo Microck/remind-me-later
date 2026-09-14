@@ -56,6 +56,8 @@ right-click a message and choose **Remind me**. presets cover 15 minutes, 30 min
 
 the private **Reminders** button opens the inbox. reminders stay there until you finish or snooze them. opening a message does not dismiss its reminder.
 
+the settings panel can keep reminder alerts open until you choose an action or close them. desktop notification timing still depends on Windows settings.
+
 when a reminder is due, the plugin can:
 
 - show an in-app alert with open, snooze, and done actions
@@ -70,7 +72,7 @@ Discord must be running with the plugin enabled to alert on time. if the compute
 
 the plugin stores reminders through `BdApi.Data`, split by Discord account. records contain Discord message, channel, and server IDs, timestamps, status, an optional note, and an optional saved preview.
 
-message previews are off by default. desktop notifications are also off by default, and notification details need a separate opt-in. turning saved previews off erases existing previews for that account.
+message previews are off by default. enable **Save message previews** if a reminder should show up to 280 characters from the saved message later. desktop notifications are also off by default, and notification details need a separate opt-in. turning saved previews off erases existing previews for that account.
 
 storage is plain JSON, not encryption. other plugins, local processes, device users, and backups may read it. there is no cross-device sync.
 

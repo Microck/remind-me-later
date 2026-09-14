@@ -1,7 +1,7 @@
 /**
  * @name Remind Me Later
  * @author Microck
- * @version 1.0.4
+ * @version 1.1.0
  * @description Private, local message reminders. Right-click a message, pick a time, and jump back when it is due. No bot, server, telemetry, or external libraries.
  * @website https://github.com/Microck/remind-me-later
  * @source https://raw.githubusercontent.com/Microck/remind-me-later/main/RemindMeLater.plugin.js
@@ -22,7 +22,7 @@ const PRESETS = Object.freeze([
     ["15 minutes", 15 * MINUTE], ["30 minutes", 30 * MINUTE],
     ["1 hour", 60 * MINUTE], ["1 day", DAY], ["1 week", 7 * DAY]
 ]);
-const DEFAULTS = Object.freeze({desktop: false, desktopPreview: false, sound: true, savePreview: false, highlight: true, showButton: true, dockLeft: false});
+const DEFAULTS = Object.freeze({desktop: false, desktopPreview: false, persistentAlerts: false, sound: true, savePreview: false, highlight: true, showButton: true, dockLeft: false});
 
 function text(value, max) { return typeof value === "string" ? value.slice(0, max) : ""; }
 function freshState() { return {schema: 1, settings: {...DEFAULTS}, reminders: []}; }
@@ -403,16 +403,35 @@ module.exports = class RemindMeLater {
         if (this.state.settings.sound) this.chime();
     }
     notifyOne(r, owner) {
-        const body = [this.locationLabel(r), r.note, r.preview].filter(Boolean).join("\n");
-        this.showInApp(r.id, "Message reminder", body, [
-            {label: "Open message", onClick: () => this.openMessage(r, owner)},
+        const body = this.reminderBody(r);
+        this.showInApp(r.id, "Reminder due", body, [
+            {label: "Open message", onClick: () => { this.closeAlert(r.id); this.openMessage(r, owner); }},
             {label: "Snooze 15m", onClick: () => this.run(owner, () => this.snooze(r.id, 15 * MINUTE, owner))},
             {label: "Done", onClick: () => this.run(owner, () => this.remove(r.id, owner))}
         ]);
-        this.showDesktop("Message reminder", this.state.settings.desktopPreview ? body : "A private message reminder is due. Click to open the message.", () => this.openMessage(r, owner), r.id);
+        this.showDesktop("Reminder due", this.state.settings.desktopPreview ? body : "A private message reminder is due. Open it to review the message.", () => this.openMessage(r, owner), r.id);
+    }
+    reminderBody(r) {
+        const details = [];
+        if (r.note) details.push(`Note: ${r.note}`);
+        if (r.preview) details.push(`Message: ${r.preview}`);
+        if (!details.length) details.push("Open the message to review it.");
+        return [this.locationLabel(r), ...details].join("\n");
     }
     showInApp(id, title, content, actions) {
         try {
+            if (this.state.settings.persistentAlerts) {
+                if (typeof this.api.UI?.showNotice !== "function") {
+                    this.toast("Persistent reminder alerts need a newer BetterDiscord version.", "error"); return;
+                }
+                const closeNotice = this.api.UI.showNotice([title, content.replaceAll("\n", " · ")].filter(Boolean).join(": "), {
+                    type: "info", timeout: 0,
+                    buttons: actions.map(action => ({label: action.label, onClick: close => { close(true); action.onClick?.(); }})),
+                    onClose: () => this.notifications.delete(id)
+                });
+                if (closeNotice) { this.notifications.set(id, {close: () => closeNotice(true)}); return; }
+                this.toast("The reminder alert could not be displayed. Open the Reminders button to review it.", "error"); return;
+            }
             const handle = this.api.UI?.showNotification?.({id: `${NAME}-${id}`, title, content,
                 duration: 15_000, actions, onClose: () => this.notifications.delete(id)});
             if (handle) { this.notifications.set(id, handle); return; }
@@ -423,7 +442,9 @@ module.exports = class RemindMeLater {
         if (!this.state.settings.desktop || typeof Notification === "undefined" || Notification.permission !== "granted") return;
         try {
             for (const old of [...this.nativeNotifications]) if (old._lrId === id) { old.onclick = null; old.close(); this.nativeNotifications.delete(old); }
-            const n = new Notification(title, {body, silent: true, tag: `${NAME}-${id}`});
+            const options = {body, silent: true, tag: `${NAME}-${id}`};
+            if (this.state.settings.persistentAlerts) options.requireInteraction = true;
+            const n = new Notification(title, options);
             n._lrId = id; this.nativeNotifications.add(n);
             n.onclick = () => { n.close(); onClick(); };
             n.onclose = () => this.nativeNotifications.delete(n);
@@ -644,6 +665,7 @@ module.exports = class RemindMeLater {
             ["sound", "Local chime", "Play a short generated sound when reminders become due."],
             ["desktop", "Desktop notifications", "Optional OS notifications. Discord must be running; system Focus / Do Not Disturb may hide them."],
             ["desktopPreview", "Show details in desktop notifications", "May expose your note and saved preview on the lock screen. Off by default."],
+            ["persistentAlerts", "Keep reminder alerts open until dismissed", "Keep the in-app alert visible until you choose an action or close it. Desktop alerts still follow Windows settings."],
             ["savePreview", "Save message previews", "Opt in to store up to 280 characters from messages you explicitly select. Turning this off erases existing previews."],
             ["highlight", "Highlight chats with due reminders", "An amber stripe on visible channel links; never changes Discord's real unread or mention state."],
             ["showButton", "Show reminder button", "Keep the small R button visible over Discord. The inbox remains available from message menus and this settings panel."],
